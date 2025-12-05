@@ -79,6 +79,12 @@ maharashtra-state-weather/
 │   ├── Amravati.yml
 │   ├── Aurangabad.yml
 │   └── ... (all 36 district workflows)
+.github/workflows/
+│   ├── Ahmednagar.yml
+│   ├── Akola.yml
+│   ├── Amravati.yml
+│   ├── Aurangabad.yml
+│   └── ... (all 36 district workflows)
 
 
 ---
