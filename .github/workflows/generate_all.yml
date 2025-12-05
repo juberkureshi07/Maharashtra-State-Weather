@@ -11,7 +11,7 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v4
 
-      - name: Generate Folders, TXT Files & 36 Workflows
+      - name: Generate all district folders, txt files & workflows
         shell: bash
         run: |
           districts=(
@@ -26,13 +26,15 @@ jobs:
           mkdir -p .github/workflows
 
           for district in "${districts[@]}"; do
-            echo "Creating folder: $district"
+            echo "Creating folder for $district"
             mkdir -p "$district"
             echo "Weather will appear here." > "$district/weather.txt"
 
-            echo "Creating workflow for $district"
+            workflow_file=".github/workflows/${district}.yml"
 
-cat <<EOF > .github/workflows/${district}.yml
+            echo "Generating workflow: $workflow_file"
+
+            cat > "$workflow_file" <<EOF
 name: ${district} Weather Update
 
 on:
@@ -43,6 +45,7 @@ on:
 jobs:
   update-weather:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
