@@ -11,7 +11,7 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v4
 
-      - name: Generate Folders, TXT Files & 36 Workflows
+      - name: Generate folders, txt files & workflows
         run: |
           districts=(
             "Ahmednagar" "Akola" "Amravati" "Aurangabad" "Beed" "Bhandara" "Buldhana"
@@ -25,18 +25,17 @@ jobs:
           mkdir -p .github/workflows
 
           for district in "${districts[@]}"; do
-            echo "--- Creating folder for $district"
+
+            echo "Creating folder: $district"
             mkdir -p "$district"
             echo "Weather data will appear here." > "$district/weather.txt"
 
-            echo "--- Creating workflow for $district"
+            echo "Creating workflow: $district.yml"
 
-            cat <<EOF > ".github/workflows/${district}.yml"
-name: ${district} Weather Update
-
+            echo "name: ${district} Weather Update
 on:
   schedule:
-    - cron: "0 */3 * * *"
+    - cron: \"0 */3 * * *\"
   workflow_dispatch:
 
 jobs:
@@ -49,17 +48,16 @@ jobs:
 
       - name: Fetch Weather
         run: |
-          curl -s "https://wttr.in/${district}?format=3" > "${district}/weather.txt"
+          curl -s \"https://wttr.in/${district}?format=3\" > \"${district}/weather.txt\"
 
-      - name: Commit weather update
+      - name: Commit update
         run: |
-          git config --local user.name "github-actions[bot]"
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-
-          git add "${district}/weather.txt"
-          git commit -m "${district} weather update" || echo "No changes"
+          git config --local user.name \"github-actions[bot]\"
+          git config --local user.email \"github-actions[bot]@users.noreply.github.com\"
+          git add \"${district}/weather.txt\"
+          git commit -m \"${district} weather update\" || echo \"No changes\"
           git push
-EOF
+" > .github/workflows/${district}.yml
 
           done
 
@@ -67,7 +65,6 @@ EOF
         run: |
           git config --local user.name "github-actions[bot]"
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
-
           git add .
-          git commit -m "Initialize 36 district folders + 36 workflows"
+          git commit -m "Initialize 36 districts + workflows"
           git push
