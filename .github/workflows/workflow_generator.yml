@@ -29,7 +29,11 @@ jobs:
 
           for district in "${districts[@]}"; do
             echo "Updating weather for $district"
+
+            # Weather fetch and save
             curl -s "https://wttr.in/${district}?format=3" > "${district}/${district}-weather.txt"
+
+            # Add & commit changes
             git add "${district}/${district}-weather.txt"
             git commit -m "${district} weather update" || echo "No changes for $district"
           done
