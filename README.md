@@ -31,9 +31,9 @@ This behaves like a distributed microservice network, where each district has it
 
 
 ---
+## 🗂️ Project Architecture
 
-🗂️ Project Architecture
-’’’
+```
 maharashtra-state-weather/
 │
 ├── Ahmednagar/weather.txt
@@ -79,7 +79,7 @@ maharashtra-state-weather/
 │   ├── Amravati.yml
 │   ├── Aurangabad.yml
 │   └── ... (all 36 district workflows)
-’’’
+```
 
 
 ---
@@ -89,7 +89,6 @@ maharashtra-state-weather/
 For each district:
 
 1. A GitHub Action triggers using a cron schedule
-
 
 2. It fetches weather data from:
 
