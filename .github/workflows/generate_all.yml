@@ -1,173 +1,34 @@
-name: 🔧 Setup Maharashtra Weather System
+name: Create District Folders
 
 on:
   workflow_dispatch:
-    inputs:
-      confirm:
-        description: 'Type "YES" to generate all workflows'
-        required: true
-        default: 'NO'
 
 jobs:
-  generate-all:
+  generate:
     runs-on: ubuntu-latest
-    
     steps:
-      # Step 1: Checkout repository with PAT token
-      - name: 📥 Checkout repository
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.PAT_TOKEN }}
-          fetch-depth: 0
-          
-      # Step 2: Create all district folders
-      - name: 📁 Create district folders
-        run: |
-          # List of all Maharashtra districts
-          districts=(
-            "Ahmednagar" "Akola" "Amravati" "Aurangabad" "Beed" "Bhandara" "Buldhana"
-            "Chandrapur" "Dhule" "Gadchiroli" "Gondia" "Hingoli" "Jalgaon" "Jalna"
-            "Kolhapur" "Latur" "Mumbai-City" "Mumbai-Suburban" "Nagpur" "Nanded"
-            "Nandurbar" "Nashik" "Osmanabad" "Palghar" "Parbhani" "Pune" "Raigad"
-            "Ratnagiri" "Sangli" "Satara" "Sindhudurg" "Solapur" "Thane" "Wardha"
-            "Washim" "Yavatmal"
-          )
-          
-          echo "📂 Creating folders for ${#districts[@]} districts..."
-          
-          for district in "${districts[@]}"; do
-            mkdir -p "districts/$district"
-            echo "# Weather for $district" > "districts/$district/weather.txt"
-            echo "Last updated: Not yet" >> "districts/$district/weather.txt"
-            echo "✅ Created folder: districts/$district"
-          done
-          
-      # Step 3: Generate workflow for each district
-      - name: ⚙️ Generate district workflows
+      - uses: actions/checkout@v4
+
+      - name: Create 36 folders + weather txt files
         run: |
           districts=(
             "Ahmednagar" "Akola" "Amravati" "Aurangabad" "Beed" "Bhandara" "Buldhana"
             "Chandrapur" "Dhule" "Gadchiroli" "Gondia" "Hingoli" "Jalgaon" "Jalna"
             "Kolhapur" "Latur" "Mumbai-City" "Mumbai-Suburban" "Nagpur" "Nanded"
             "Nandurbar" "Nashik" "Osmanabad" "Palghar" "Parbhani" "Pune" "Raigad"
-            "Ratnagiri" "Sangli" "Satara" "Sindhudurg" "Solapur" "Thane" "Wardha"
-            "Washim" "Yavatmal"
+            "Ratnagiri" "Sangli" "Satara" "Sindhudurg" "Solapur" "Thane"
+            "Wardha" "Washim" "Yavatmal"
           )
-          
-          mkdir -p .github/workflows
-          
+
           for district in "${districts[@]}"; do
-            # Create safe filename
-            safe_name=$(echo "$district" | tr ' ' '-' | tr '[:upper:]' '[:lower:]')
-            
-            cat > ".github/workflows/weather-$safe_name.yml" <<EOF
-name: 🌤️ Update $district Weather
-
-on:
-  schedule:
-    - cron: '0 */3 * * *'  # Every 3 hours
-  workflow_dispatch:
-
-jobs:
-  update:
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: 📥 Checkout code
-        uses: actions/checkout@v4
-        with:
-          token: \${{ secrets.PAT_TOKEN }}
-          
-      - name: 🌡️ Fetch weather data
-        run: |
-          # Try different formats if one fails
-          curl -s "https://wttr.in/$district?format=%C+%t" > temp.txt || echo "Failed to fetch" > temp.txt
-          
-          # Format the output nicely
-          echo "🌤️ Weather for $district" > districts/$district/weather.txt
-          echo "📅 Last updated: \$(date '+%Y-%m-%d %H:%M:%S')" >> districts/$district/weather.txt
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━" >> districts/$district/weather.txt
-          cat temp.txt >> districts/$district/weather.txt
-          echo "" >> districts/$district/weather.txt
-          echo "📍 Source: wttr.in/$district" >> districts/$district/weather.txt
-          
-      - name: 💾 Commit changes
-        run: |
-          git config user.name "WeatherBot"
-          git config user.email "weather-bot@users.noreply.github.com"
-          git add districts/$district/weather.txt
-          
-          # Commit only if changes exist
-          if git diff --staged --quiet; then
-            echo "No changes to commit"
-          else
-            git commit -m "🌤️ Update weather for $district [auto]"
-            git push
-          fi
-EOF
-            
-            echo "✅ Generated workflow: weather-$safe_name.yml"
+            mkdir -p "$district"
+            touch "$district/${district}-weather.txt"
           done
-          
-          echo "🎉 Total workflows generated: ${#districts[@]}"
-          
-      # Step 4: Create a test workflow (optional)
-      - name: 🧪 Create test workflow
-        run: |
-          cat > ".github/workflows/test-weather.yml" <<EOF
-name: 🧪 Test Weather System
 
-on: [workflow_dispatch]
-
-jobs:
-  test-pune:
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: 📥 Checkout
-        uses: actions/checkout@v4
-        
-      - name: 🌡️ Test Pune weather
+      - name: Commit folders
         run: |
-          echo "Testing weather API..."
-          curl -s "https://wttr.in/Pune?format=3"
-          echo ""
-          echo "✅ API is working!"
-EOF
-          
-      # Step 5: Push all changes
-      - name: 🚀 Push all changes
-        run: |
-          git config user.name "SetupBot"
-          git config user.email "setup-bot@users.noreply.github.com"
+          git config --local user.name "JuberBot"
+          git config --local user.email "actions@github.com"
           git add .
-          
-          if git diff --staged --quiet; then
-            echo "No changes to push"
-          else
-            git commit -m "🚀 Initial setup: Maharashtra Weather System"
-            git push
-            echo "✅ All changes pushed successfully!"
-          fi
-          
-      # Step 6: Summary
-      - name: 📊 Setup Summary
-        run: |
-          echo "=========================================="
-          echo "🎉 MAHARASHTRA WEATHER SYSTEM SETUP COMPLETE"
-          echo "=========================================="
-          echo ""
-          echo "📊 What was created:"
-          echo "✅ 36 district folders in /districts/"
-          echo "✅ 36 automated workflows in .github/workflows/"
-          echo "✅ 1 test workflow"
-          echo ""
-          echo "🔄 Each workflow will run:"
-          echo "   • Every 3 hours (automatically)"
-          echo "   • Or manually via workflow_dispatch"
-          echo ""
-          echo "🚀 Next steps:"
-          echo "1. Go to Actions tab"
-          echo "2. Run 'Test Weather System' to verify"
-          echo "3. Run any district workflow manually"
-          echo "=========================================="
+          git commit -m "Created 36 district folders with weather txt" || echo "No changes"
+          git push
