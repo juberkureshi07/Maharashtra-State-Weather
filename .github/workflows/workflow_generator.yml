@@ -1,0 +1,60 @@
+name: Generate District Workflows
+
+on:
+  workflow_dispatch:
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate workflow files
+        run: |
+          districts=(
+            "Ahmednagar" "Akola" "Amravati" "Aurangabad" "Beed" "Bhandara" "Buldhana"
+            "Chandrapur" "Dhule" "Gadchiroli" "Gondia" "Hingoli" "Jalgaon" "Jalna"
+            "Kolhapur" "Latur" "Mumbai-City" "Mumbai-Suburban" "Nagpur" "Nanded"
+            "Nandurbar" "Nashik" "Osmanabad" "Palghar" "Parbhani" "Pune" "Raigad"
+            "Ratnagiri" "Sangli" "Satara" "Sindhudurg" "Solapur" "Thane"
+            "Wardha" "Washim" "Yavatmal"
+          )
+
+          mkdir -p .github/workflows
+
+          for district in "${districts[@]}"; do
+            cat > ".github/workflows/${district}.yml" <<EOF
+name: ${district} Weather Update
+
+on:
+  schedule:
+    - cron: "0 */3 * * *"
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch Weather
+        run: curl -s "https://wttr.in/${district}?format=3" > "${district}/${district}-weather.txt"
+
+      - name: Commit Update
+        run: |
+          git config --local user.name "JuberBot"
+          git config --local user.email "actions@github.com"
+          git add "${district}/${district}-weather.txt"
+          git commit -m "${district} Weather Updated" || echo "No changes"
+          git push
+EOF
+          done
+
+      - name: Commit workflows
+        run: |
+          git config --local user.name "JuberBot"
+          git config --local user.email "actions@github.com"
+          git add .github/workflows
+          git commit -m "Generated all district workflows" || echo "No changes"
+          git push
