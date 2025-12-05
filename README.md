@@ -33,7 +33,7 @@ This behaves like a distributed microservice network, where each district has it
 ---
 
 🗂️ Project Architecture
-
+’’’
 maharashtra-state-weather/
 │
 ├── Ahmednagar/weather.txt
@@ -79,12 +79,7 @@ maharashtra-state-weather/
 │   ├── Amravati.yml
 │   ├── Aurangabad.yml
 │   └── ... (all 36 district workflows)
-.github/workflows/
-│   ├── Ahmednagar.yml
-│   ├── Akola.yml
-│   ├── Amravati.yml
-│   ├── Aurangabad.yml
-│   └── ... (all 36 district workflows)
+’’’
 
 
 ---
