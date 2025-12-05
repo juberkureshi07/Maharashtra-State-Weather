@@ -1,16 +1,19 @@
-name: Generate District Workflows
+name: Maharashtra Weather Update (All Districts)
 
 on:
+  schedule:
+    - cron: "0 */3 * * *"
   workflow_dispatch:
 
 jobs:
-  generate:
+  update-all:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Generate workflow files
+      - name: Update weather for all 36 districts
         run: |
           districts=(
             "Ahmednagar" "Akola" "Amravati" "Aurangabad" "Beed" "Bhandara" "Buldhana"
@@ -21,40 +24,14 @@ jobs:
             "Wardha" "Washim" "Yavatmal"
           )
 
-          mkdir -p .github/workflows
+          git config --local user.name "JuberBot"
+          git config --local user.email "actions@github.com"
 
           for district in "${districts[@]}"; do
-            cat > ".github/workflows/${district}.yml" <<EOF
-name: ${district} Weather Update
-
-on:
-  schedule:
-    - cron: "0 */3 * * *"
-  workflow_dispatch:
-
-jobs:
-  update:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Fetch Weather
-        run: curl -s "https://wttr.in/${district}?format=3" > "${district}/${district}-weather.txt"
-
-      - name: Commit Update
-        run: |
-          git config --local user.name "JuberBot"
-          git config --local user.email "actions@github.com"
-          git add "${district}/${district}-weather.txt"
-          git commit -m "${district} Weather Updated" || echo "No changes"
-          git push
-EOF
+            echo "Updating weather for $district"
+            curl -s "https://wttr.in/${district}?format=3" > "${district}/${district}-weather.txt"
+            git add "${district}/${district}-weather.txt"
+            git commit -m "${district} weather update" || echo "No changes for $district"
           done
 
-      - name: Commit workflows
-        run: |
-          git config --local user.name "JuberBot"
-          git config --local user.email "actions@github.com"
-          git add .github/workflows
-          git commit -m "Generated all district workflows" || echo "No changes"
           git push
