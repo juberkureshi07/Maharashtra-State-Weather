@@ -1,24 +1,68 @@
-name: Generate All Weather Workflows
+name: Auto Generate Maharashtra Weather System
 
 on:
   workflow_dispatch:
 
 jobs:
-  build:
+  generate-all:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Repo
+        uses: actions/checkout@v4
 
-      - name: Run generator script
+      - name: Generate Folders, TXT Files & 36 Workflows
         run: |
-          chmod +x scripts/generate_workflows.sh
-          ./scripts/generate_workflows.sh
+          districts=(
+            "Ahmednagar" "Akola" "Amravati" "Aurangabad" "Beed" "Bhandara" "Buldhana"
+            "Chandrapur" "Dhule" "Gadchiroli" "Gondia" "Hingoli" "Jalgaon" "Jalna"
+            "Kolhapur" "Latur" "Mumbai-City" "Mumbai-Suburban" "Nagpur" "Nanded"
+            "Nandurbar" "Nashik" "Osmanabad" "Palghar" "Parbhani" "Pune" "Raigad"
+            "Ratnagiri" "Sangli" "Satara" "Sindhudurg" "Solapur" "Thane" "Wardha"
+            "Washim" "Yavatmal"
+          )
 
-      - name: Commit generated files
+          mkdir -p .github/workflows
+
+          for district in "${districts[@]}"; do
+            echo "Creating folder: $district"
+            mkdir -p "$district"
+            echo "Weather will appear here." > "$district/weather.txt"
+
+cat <<EOF > .github/workflows/${district}.yml
+name: ${district} Weather Update
+
+on:
+  schedule:
+    - cron: "0 */3 * * *"
+  workflow_dispatch:
+
+jobs:
+  update-weather:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Fetch Weather
         run: |
-          git config --local user.name "github-actions[bot]"
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          curl -s "https://wttr.in/${district}?format=3" > "${district}/weather.txt"
+
+      - name: Commit update
+        run: |
+          git config --local user.name "JuberBot"
+          git config --local user.email "actions@github.com"
+          git add "${district}/weather.txt"
+          git commit -m "${district} weather update" || echo "No changes"
+EOF
+
+          done
+
+      - name: Push all generated files using PAT
+        run: |
+          git config --local user.name "JuberBot"
+          git config --local user.email "actions@github.com"
           git add .
-          git commit -m "Auto-generated all 36 district workflows"
-          git push
+          git commit -m "Initialize all districts & workflows" || echo "No changes"
+          git push https://${{ secrets.PAT_TOKEN }}@github.com/juberkureshi07/Maharashtra-State-Weather.git
