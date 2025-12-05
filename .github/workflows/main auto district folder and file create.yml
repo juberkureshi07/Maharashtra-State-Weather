@@ -1,0 +1,73 @@
+name: Auto Generate Maharashtra Weather System
+
+on:
+  workflow_dispatch:
+
+jobs:
+  generate-all:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Generate Folders, TXT Files & 36 Workflows
+        run: |
+          districts=(
+            "Ahmednagar" "Akola" "Amravati" "Aurangabad" "Beed" "Bhandara" "Buldhana"
+            "Chandrapur" "Dhule" "Gadchiroli" "Gondia" "Hingoli" "Jalgaon" "Jalna"
+            "Kolhapur" "Latur" "Mumbai-City" "Mumbai-Suburban" "Nagpur" "Nanded"
+            "Nandurbar" "Nashik" "Osmanabad" "Palghar" "Parbhani" "Pune" "Raigad"
+            "Ratnagiri" "Sangli" "Satara" "Sindhudurg" "Solapur" "Thane"
+            "Wardha" "Washim" "Yavatmal"
+          )
+
+          mkdir -p .github/workflows
+
+          for district in "${districts[@]}"; do
+            echo "--- Creating folder for $district"
+            mkdir -p "$district"
+            echo "Weather data will appear here." > "$district/weather.txt"
+
+            echo "--- Creating workflow for $district"
+
+            cat <<EOF > ".github/workflows/${district}.yml"
+name: ${district} Weather Update
+
+on:
+  schedule:
+    - cron: "0 */3 * * *"
+  workflow_dispatch:
+
+jobs:
+  update-weather:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Fetch Weather
+        run: |
+          curl -s "https://wttr.in/${district}?format=3" > "${district}/weather.txt"
+
+      - name: Commit weather update
+        run: |
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add "${district}/weather.txt"
+          git commit -m "${district} weather update" || echo "No changes"
+          git push
+EOF
+
+          done
+
+      - name: Commit all generated files
+        run: |
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add .
+          git commit -m "Initialize 36 district folders + 36 workflows"
+          git push
